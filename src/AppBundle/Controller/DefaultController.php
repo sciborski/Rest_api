@@ -16,6 +16,8 @@ use Sensio\Bundle\FrameworkExtraBundle\Configuration\Template;
 use Symfony\Component\HttpFoundation\JsonResponse;
 
 
+use Symfony\Component\Security\Core\Exception\AccessDeniedException;
+use Symfony\Component\Security\Core\SecurityContextInterface;
 use Symfony\Component\Serializer\Serializer;
 use Symfony\Component\Serializer\Encoder\XmlEncoder;
 use Symfony\Component\Serializer\Encoder\JsonEncoder;
@@ -37,11 +39,17 @@ class DefaultController extends Controller
     }
 
     /**
-     * @Route("/search/{miasto}/{nazwa}")
+     * @Route("/api/search/{miasto}/{nazwa}")
      *
      *
      */
     public function searchAction($miasto,$nazwa){
+
+        if (false === $this->get('security.context')->isGranted('IS_AUTHENTICATED_FULLY')) {
+            throw new AccessDeniedException();
+        }
+
+
         //$accessor = PropertyAccess::createPropertyAccessor();
         $gm = $this->getDoctrine()->getManager();
         $prod = $gm->getRepository('AppBundle:Product')->findBy(array('name'=>$nazwa));
@@ -183,4 +191,43 @@ class DefaultController extends Controller
     public function testAction(){
         return new Response('dziala');
     }
+
+
+
+    /**
+     * @Route("/login", name="login_route")
+     */
+    public function loginAction(Request $request)
+    {
+        $authenticationUtils = $this->get('security.authentication_utils');
+        // get the login error if there is one
+        $error = $authenticationUtils->getLastAuthenticationError();
+        // last username entered by the user
+        $lastUsername = $authenticationUtils->getLastUsername();
+
+        return $this->render(
+            'default/login.html.twig',
+            array(
+                // last username entered by the user
+                'last_username' => $lastUsername,
+                'error' => $error,
+            )
+        );
+    }
+    /**
+     * @Route("/login_check", name="login_check")
+     */
+    public function loginCheckAction()
+    {
+        // this controller will not be executed,
+        // as the route is handled by the Security system
+    }
+
+    /**
+     * @Route("/logout", name="logout")
+     */
+    public function logoutAction()
+    {
+    }
+
 }
