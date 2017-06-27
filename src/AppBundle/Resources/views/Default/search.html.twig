@@ -1,0 +1,30 @@
+{% extends '::base.html.twig' %}
+
+{% block body %}
+
+    <h1>Lista</h1>
+
+    <table >
+        <thead>
+        <tr>
+            <th>ID</th>
+            <th>Nazwa</th>
+            <th>Cena</th>
+            <th>Miasto</th>
+            <th>Ulica</th>
+        </tr>
+        </thead>
+        <tbody>
+        {% for entry in entities %}
+            <tr>
+                <td>{{ entry.idProduct }}</td>
+                <td>{{ entry.name }}</td>
+                <td>{{ entry.price }}</td>
+                <td>{{ entry.town }}</td>
+                <td>{{ entry.street }}</td>
+            </tr>
+
+        {% endfor %}
+        </tbody>
+    </table>
+{% endblock %}

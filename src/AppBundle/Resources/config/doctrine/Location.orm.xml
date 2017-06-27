@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="utf-8"?>
+<doctrine-mapping xmlns="http://doctrine-project.org/schemas/orm/doctrine-mapping" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://doctrine-project.org/schemas/orm/doctrine-mapping http://doctrine-project.org/schemas/orm/doctrine-mapping.xsd">
+  <entity name="AppBundle\Entity\Location" table="location">
+    <indexes>
+      <index name="location_ibfk_1" columns="id_product"/>
+      <index name="id_user" columns="id_user"/>
+    </indexes>
+    <id name="idLocation" type="integer" column="id_location">
+      <generator strategy="IDENTITY"/>
+    </id>
+    <field name="town" type="text" column="town" length="65535" nullable="false"/>
+    <field name="street" type="text" column="street" length="65535" nullable="false"/>
+    <field name="price" type="float" column="price" precision="10" scale="0" nullable="false"/>
+    <many-to-one field="idUser" target-entity="User">
+      <join-columns>
+        <join-column name="id_user" referenced-column-name="id_user"/>
+      </join-columns>
+    </many-to-one>
+    <many-to-one field="idProduct" target-entity="Product">
+      <join-columns>
+        <join-column name="id_product" referenced-column-name="id_product"/>
+      </join-columns>
+    </many-to-one>
+  </entity>
+</doctrine-mapping>
