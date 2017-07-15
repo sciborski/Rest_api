@@ -69,6 +69,7 @@ swiftmailer:
     spool:     { type: memory }
 
 
+
 fos_oauth_server:
     db_driver: orm       # Drivers available: orm, mongodb, or propel
     client_class:        AppBundle\Entity\Client
@@ -76,4 +77,4 @@ fos_oauth_server:
     refresh_token_class: AppBundle\Entity\RefreshToken
     auth_code_class:     AppBundle\Entity\AuthCode
     service:
-            user_provider: our_db_provider
+        user_provider: our_db_provider

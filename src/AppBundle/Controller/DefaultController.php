@@ -230,4 +230,20 @@ class DefaultController extends Controller
     {
     }
 
+    /**
+     * @Route("/addClient", name="add_client")
+     */
+    public function addClientAction()
+    {
+        $clientManager = $this->get('fos_oauth_server.client_manager.default');
+        $client = $clientManager->createClient();
+        $client->setRedirectUris(array('http://adam.wroclaw.pl'));
+        $client->setAllowedGrantTypes(array('token', 'authorization_code'));
+        $clientManager->updateClient($client);
+        $output = sprintf("Added client with id: %s secret: %s",$client->getPublicId(),$client->getSecret());
+        return new Response($output);
+
+        //Added client with id: 1_5orqn0eet08wsk04ws40g0444cgok0kg04sowscc0s8sg4gs4s secret: 2aleypjq5kisgcg4kws040coskkkosgkwkc8s0c04kwksgsoc8
+    }
+
 }
