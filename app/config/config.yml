@@ -68,6 +68,34 @@ swiftmailer:
     password:  "%mailer_password%"
     spool:     { type: memory }
 
+# Nelmio CORS Configuration
+nelmio_cors:
+    defaults:
+        allow_credentials: false
+        allow_origin: ['*']
+        allow_headers: ['*']
+        allow_methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS']
+        max_age: 3600
+        hosts: []
+        origin_regex: false
+
+
+fos_user:
+    db_driver: orm # other valid values are 'mongodb', 'couchdb' and 'propel'
+    firewall_name: api
+    user_class: AppBundle\Entity\User
+
+# FOSRest Configuration
+fos_rest:
+    format_listener:
+        rules:
+            - { path: '^/api', priorities: ['json'], fallback_format: json, prefer_extension: false }
+            - { path: '^/', priorities: ['html'], fallback_format: html, prefer_extension: false }
+    param_fetcher_listener: true
+    view:
+        view_response_listener: 'force'
+        formats:
+            json: true
 
 
 fos_oauth_server:
@@ -77,4 +105,4 @@ fos_oauth_server:
     refresh_token_class: AppBundle\Entity\RefreshToken
     auth_code_class:     AppBundle\Entity\AuthCode
     service:
-        user_provider: our_db_provider
+        user_provider: fos_user.user_provider.username

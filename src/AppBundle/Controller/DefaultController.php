@@ -45,34 +45,34 @@ class DefaultController extends Controller
      */
     public function searchAction($miasto,$nazwa){
 
-        if (false === $this->get('security.context')->isGranted('IS_AUTHENTICATED_FULLY')) {
-            throw new AccessDeniedException();
-        }
-
-
         //$accessor = PropertyAccess::createPropertyAccessor();
         $gm = $this->getDoctrine()->getManager();
-        $prod = $gm->getRepository('AppBundle:Product')->findBy(array('name'=>$nazwa));
-        $loc = $gm->getRepository('AppBundle:Location');
+       // $prod = $gm->getRepository('AppBundle:Product')->findBy(array('name'=>null));
+
+        $prod = $gm->getRepository('AppBundle:Product')->findAll();
+
+        /*$loc = $gm->getRepository('AppBundle:Location');
         $data = $loc->findBy(
             array('town'=>$miasto,'idProduct'=>$prod),
             array('price'=>'ASC')
-        );
+        );*/
         //$test = $accessor->getValue($data,'[0]');
         //$test2=$test->getTown();
-        $encoders = array(new XmlEncoder(), new JsonEncoder());
-        $normalizers = array(new ObjectNormalizer());
+        //$encoders = array(new XmlEncoder(), new JsonEncoder());
+        //$normalizers = array(new ObjectNormalizer());
 
-        $serializer = new Serializer($normalizers, $encoders);
+        //$serializer = new Serializer($normalizers, $encoders);
 
         //$jsonContent = $serializer->serialize($data, 'json');
         //echo $jsonContent;
         //$response = new JsonResponse();
         //$response->setData($jsonContent);
 
-        $response = new Response($serializer->serialize($data, 'json'));
+       /* $response = new Response($serializer->serialize($data, 'json'));
         $response->headers->set('Content-Type', 'application/json; charset=UTF-8');
-        return $response;
+        return $response;*/
+
+       return $prod;
 
 
         //return array('entities'=>$entities);
@@ -193,11 +193,8 @@ class DefaultController extends Controller
     }
 
 
-
-    /**
-     * @Route("/login", name="login_route")
-     */
     public function loginAction(Request $request)
+        //@Route("/login", name="login_route")
     {
         $authenticationUtils = $this->get('security.authentication_utils');
         // get the login error if there is one
@@ -214,19 +211,16 @@ class DefaultController extends Controller
             )
         );
     }
-    /**
-     * @Route("/login_check", name="login_check")
-     */
+
     public function loginCheckAction()
+        //@Route("/login_check", name="login_check")
     {
         // this controller will not be executed,
         // as the route is handled by the Security system
     }
 
-    /**
-     * @Route("/logout", name="logout")
-     */
     public function logoutAction()
+//@Route("/logout", name="logout")
     {
     }
 
@@ -238,7 +232,7 @@ class DefaultController extends Controller
         $clientManager = $this->get('fos_oauth_server.client_manager.default');
         $client = $clientManager->createClient();
         $client->setRedirectUris(array('http://adam.wroclaw.pl'));
-        $client->setAllowedGrantTypes(array('token', 'authorization_code'));
+        $client->setAllowedGrantTypes(array('password'));
         $clientManager->updateClient($client);
         $output = sprintf("Added client with id: %s secret: %s",$client->getPublicId(),$client->getSecret());
         return new Response($output);
