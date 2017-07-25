@@ -25,17 +25,17 @@ class MedicinesStorageRESTController extends FOSRestController
 {
 
     /**
-     * @Rest\Get("/api/medicines/{miasto}/{nazwa}")
+     * @Rest\Get("/api/medicines/{town}/{name}")
      */
-    public function getMedicinesAction( $miasto , $nazwa ){
+    public function getMedicinesAction( $town , $name ){
 
             //$accessor = PropertyAccess::createPropertyAccessor();
             $gm = $this->getDoctrine()->getManager();
             $prod = $gm->getRepository('AppBundle:Product')
-                ->findBy(array('name' => $nazwa));
+                ->findBy(array('name' => $name));
             $loc = $gm->getRepository('AppBundle:Location');
             $data = $loc->findBy(
-                array('town' => $miasto, 'idProduct' => $prod),
+                array('town' => $town, 'idProduct' => $prod),
                 array('price' => 'ASC')
             );
 
@@ -63,6 +63,79 @@ class MedicinesStorageRESTController extends FOSRestController
         $response->headers->set('Content-Type', 'application/json; charset=UTF-8');
         return $response;*/
 
+    }
+
+    /**
+     * @Rest\Get("/api/search/{qr}")
+     */
+    public function searchQrAction($qr){
+        $gm = $this->getDoctrine()->getManager();
+        $prod = $gm->getRepository('AppBundle:Product')->findBy(array('qrCode'=>$qr));
+
+        $encoders = array(new XmlEncoder(), new JsonEncoder());
+        $normalizers = array(new ObjectNormalizer());
+
+        $serializer = new Serializer($normalizers, $encoders);
+
+        $response = new Response($serializer->serialize($prod, 'json'));
+        $response->headers->set('Content-Type', 'application/json; charset=UTF-8');
+        return $response;
+    }
+
+    /**
+     * @Rest\Post("/api/add_product")
+     */
+    public function addProductAction(Request $request){
+        $product = new Product();
+        $data = json_decode($request->getContent(),true);
+        $form = $this->get('form.factory')->createNamed('',new ProductType(),$product);
+        $form->submit($data);
+        if($form->isValid()){
+            $gm = $this->getDoctrine()->getManager();
+            $gm->persist($product);
+            $gm->flush();
+
+            $response = new Response();
+            $response->setContent(json_encode(array(
+                'data' => 'succes',
+                'idProduct' => $product->getIdProduct(),
+            )));
+            return $response;
+        }
+
+        $response = new Response();
+        $response->setContent(json_encode(array(
+            'data' => 'fail',
+        )));
+        return $response;
+    }
+
+    /**
+     * @Rest\Post("/api/add_location")
+     */
+    public function addLocationAction(Request $request){
+        $location = new Location();
+        $data = json_decode($request->getContent(),true);
+        $form = $this->get('form.factory')->createNamed('',new LocationType(),$location);
+        $form->submit($data);
+        if($form->isValid()){
+            $gm = $this->getDoctrine()->getManager();
+            $gm->persist($location);
+            $gm->flush();
+
+            $response = new Response();
+            $response->setContent(json_encode(array(
+                'data' => 'succes',
+                //'id_loc' => $location->getIdLocation(),
+            )));
+            return $response;
+        }
+
+        $response = new Response();
+        $response->setContent(json_encode(array(
+            'data' => 'fail',
+        )));
+        return $response;
     }
 
 }
