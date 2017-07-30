@@ -138,4 +138,51 @@ class MedicinesStorageRESTController extends FOSRestController
         return $response;
     }
 
+    /**
+     * @Rest\Get("/api/medicines2/{town}/{name}")
+     */
+    public function getMedicines2Action( $town , $name ){
+
+        //$accessor = PropertyAccess::createPropertyAccessor();
+        $gm = $this->getDoctrine()->getManager();
+        $prod = $gm->getRepository('AppBundle:Product')
+            ->findBy(array('name' => $name));
+        $loc = $gm->getRepository('AppBundle:Location');
+        $data = $loc->findBy(
+            array('town' => $town, 'idProduct' => $prod),
+            array('price' => 'ASC')
+        );
+
+
+        //select u.username, l.town, l.street, l.price, p.name, p.qr_code
+        // from user as u, location as l, product as p
+        // where u.id_user = l.id_user and p.id_product = l.id_product and l.town = 'kraków' and p.name = 'apap'
+
+
+
+        //echo $data[0];
+
+        //$test = $accessor->getValue($data,'[0]');
+        //$test2=$test->getTown();
+        //$encoders = array(new XmlEncoder(), new JsonEncoder());
+        //$normalizers = array(new ObjectNormalizer());
+
+        //$serializer = new Serializer($normalizers, $encoders);
+
+        //$jsonContent = $serializer->serialize($data, 'json');
+        //echo $jsonContent;
+        //$response = new JsonResponse();
+        //$response->setData($jsonContent);
+
+        /*if ($data === null) {
+            return new View("Not found", Response::HTTP_NOT_FOUND);
+        }*/
+        return $data;
+
+        /*$response = new Response($serializer->serialize($data, 'json'));
+        $response->headers->set('Content-Type', 'application/json; charset=UTF-8');
+        return $response;*/
+
+    }
+
 }
