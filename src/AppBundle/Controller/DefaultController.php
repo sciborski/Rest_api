@@ -232,12 +232,14 @@ class DefaultController extends Controller
         $clientManager = $this->get('fos_oauth_server.client_manager.default');
         $client = $clientManager->createClient();
         $client->setRedirectUris(array('http://adam.wroclaw.pl'));
-        $client->setAllowedGrantTypes(array('password'));
+        $client->setAllowedGrantTypes(array('password','refresh_token'));
         $clientManager->updateClient($client);
         $output = sprintf("Added client with id: %s secret: %s",$client->getPublicId(),$client->getSecret());
         return new Response($output);
 
         //Added client with id: 1_5orqn0eet08wsk04ws40g0444cgok0kg04sowscc0s8sg4gs4s secret: 2aleypjq5kisgcg4kws040coskkkosgkwkc8s0c04kwksgsoc8
+
+        //Added client with id: 5_21vemuwjz78kww8sscccgkwg84ogs4c8gw0scg4wogsgkcg444 secret: ymotev8phys8wgw4okcgosc44w4884cc80kk8w4gkk4cgwccs
     }
 
 }
