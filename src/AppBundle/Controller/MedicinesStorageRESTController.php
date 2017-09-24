@@ -53,7 +53,8 @@ class MedicinesStorageRESTController extends FOSRestController
                       LEFT JOIN product pr ON pr.id_product = loc.id_product
                       LEFT JOIN user as u on u.id_user = loc.id_user
                       WHERE loc.town =:town
-                      AND pr.name =:name');
+                      AND pr.name =:name
+                      ORDER BY loc.price');
         $em->bindValue('town',$town);
         $em->bindValue('name',$name);
         $em->execute();

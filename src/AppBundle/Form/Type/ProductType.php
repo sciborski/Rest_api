@@ -1,10 +1,5 @@
 <?php
-/**
- * Created by PhpStorm.
- * User: Dariusz
- * Date: 2017-02-06
- * Time: 20:55
- */
+
 
 namespace AppBundle\Form\Type;
 
