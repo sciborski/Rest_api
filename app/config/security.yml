@@ -15,7 +15,6 @@ security:
                 id: fos_user.user_provider.username
 
     firewalls:
-       # main:
        #     pattern: ^/aa
        #     form_login:
        #         provider: fos_userbundle
@@ -41,13 +40,18 @@ security:
             pattern: ^/(_(profiler|wdt)|css|images|js)/
             security: false
 
+
+
         default:
             anonymous: ~
             http_basic: ~
 
+
     access_control:
             - { path: ^/login$, role: IS_AUTHENTICATED_ANONYMOUSLY }
             - { path: ^/register, role: IS_AUTHENTICATED_ANONYMOUSLY }
+            - { path: ^/reg, role: IS_AUTHENTICATED_ANONYMOUSLY }
+            - { path: ^/logout, role: IS_AUTHENTICATED_ANONYMOUSLY }
             - { path: ^/resetting, role: IS_AUTHENTICATED_ANONYMOUSLY }
             - { path: ^/admin/, role: ROLE_ADMIN }
-            - {path: ^/api, roles: [ IS_AUTHENTICATED_FULLY ] }
+            - { path: ^/api, roles: [ IS_AUTHENTICATED_FULLY ] }

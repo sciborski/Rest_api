@@ -14,9 +14,13 @@ class LocationType extends AbstractType
             ->add('town')
             ->add('street')
             ->add('price')
-            ->add('idUser')
+            //->add('id_user')
+            ->add('id_user','entity',array(
+                'class' => 'AppBundle\Entity\User',
+                'multiple' => false
+            ))
             //->add('idProduct')
-            ->add('idProduct','entity',array(
+            ->add('id_product','entity',array(
                 'class' => 'AppBundle\Entity\Product',
                 'multiple' => false
             ))

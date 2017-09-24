@@ -4,9 +4,12 @@ namespace AppBundle\Controller;
 
 use AppBundle\Entity\Location;
 use AppBundle\Entity\Product;
+use AppBundle\Entity\User;
 use AppBundle\Form\Type\ProductType;
 use AppBundle\Form\Type\LocationType;
+use AppBundle\Form\Type\UserType;
 use Doctrine\Common\Collections\ArrayCollection;
+use Doctrine\ORM\Query\ResultSetMapping;
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\Route;
 use Symfony\Bundle\FrameworkBundle\Controller\Controller;
 use Symfony\Component\HttpFoundation\Request;
@@ -39,7 +42,7 @@ class DefaultController extends Controller
     }
 
     /**
-     * @Route("/api/search/{miasto}/{nazwa}")
+     * @Route("/search/{miasto}/{nazwa}")
      *
      *
      */
@@ -47,38 +50,66 @@ class DefaultController extends Controller
 
         //$accessor = PropertyAccess::createPropertyAccessor();
         $gm = $this->getDoctrine()->getManager();
-       // $prod = $gm->getRepository('AppBundle:Product')->findBy(array('name'=>null));
-
-        $prod = $gm->getRepository('AppBundle:Product')->findAll();
-
-        /*$loc = $gm->getRepository('AppBundle:Location');
+        $prod = $gm->getRepository('AppBundle:Product')
+            ->findBy(array('name' => $nazwa));
+        $loc = $gm->getRepository('AppBundle:Location');
         $data = $loc->findBy(
-            array('town'=>$miasto,'idProduct'=>$prod),
-            array('price'=>'ASC')
-        );*/
+            array('town' => $miasto, 'idProduct' => $prod),
+            array('price' => 'ASC')
+        );
+
+
+        //echo $data[0];
+
         //$test = $accessor->getValue($data,'[0]');
         //$test2=$test->getTown();
-        //$encoders = array(new XmlEncoder(), new JsonEncoder());
-        //$normalizers = array(new ObjectNormalizer());
-
-        //$serializer = new Serializer($normalizers, $encoders);
-
-        //$jsonContent = $serializer->serialize($data, 'json');
-        //echo $jsonContent;
-        //$response = new JsonResponse();
-        //$response->setData($jsonContent);
-
-       /* $response = new Response($serializer->serialize($data, 'json'));
+        $encoders = array(new XmlEncoder(), new JsonEncoder());
+        $normalizers = array(new ObjectNormalizer());
+        $serializer = new Serializer($normalizers, $encoders);
+        $jsonContent = $serializer->serialize($data, 'json');
+        $response = new JsonResponse();
+        $response->setData($jsonContent);
+         $response = new Response($serializer->serialize($data, 'json'));
         $response->headers->set('Content-Type', 'application/json; charset=UTF-8');
-        return $response;*/
-
-       return $prod;
-
-
-        //return array('entities'=>$entities);
+        return $response;
 
 
     }
+
+
+    /**
+     * @Route("/test/{miasto}/{nazwa}")
+     *
+     *
+     */
+    public function test2Action($miasto,$nazwa){
+        $em = $this->getDoctrine()->getEntityManager()
+            ->getConnection()
+            ->prepare('SELECT loc.town, loc.street, loc.price, pr.name,u.id_user, u.username FROM location loc
+                      LEFT JOIN product pr ON pr.id_product = loc.id_product
+                      LEFT JOIN user as u on u.id_user = loc.id_user
+                      WHERE loc.town =:town
+                      AND pr.name =:name');
+        $em->bindValue('town',$miasto);
+        $em->bindValue('name',$nazwa);
+        $em->execute();
+        $data = $em->fetchAll();
+        $data2 = json_encode($data);
+
+        return new Response($data2);
+    }
+
+    /*
+     select pr.name, pr.qr_code, loc.price, loc.town, loc.street, u.username
+from location as loc
+left join product as pr on pr.id_product = loc.id_product
+left join user as u on u.id_user = loc.id_user
+where loc.town = 'kraków'
+     */
+
+
+
+
 
     /**
      * @Route("/search/{qr}")
@@ -88,7 +119,7 @@ class DefaultController extends Controller
     public function searchQrAction($qr){
         $gm = $this->getDoctrine()->getManager();
         $prod = $gm->getRepository('AppBundle:Product')->findBy(array('qrCode'=>$qr));
-
+        //print_r($prod);
         $encoders = array(new XmlEncoder(), new JsonEncoder());
         $normalizers = array(new ObjectNormalizer());
 
@@ -97,6 +128,24 @@ class DefaultController extends Controller
         $response = new Response($serializer->serialize($prod, 'json'));
         $response->headers->set('Content-Type', 'application/json; charset=UTF-8');
         return $response;
+    }
+
+    /**
+     * @Route("/test/{qr}")
+     *
+     *
+     */
+    public function test3Action($qr){
+        $em = $this->getDoctrine()->getEntityManager()
+            ->getConnection()
+            ->prepare('SELECT pr.name, pr.qr_code, pr.id_product FROM product pr
+                      WHERE pr.qr_code =:qr');
+        $em->bindValue('qr',$qr);
+        $em->execute();
+        $data = $em->fetchAll();
+        $data2 = json_encode($data);
+
+        return new Response($data2);
     }
 
 
@@ -160,6 +209,7 @@ class DefaultController extends Controller
         return $response;
     }
 
+
     public function registerAction(Request $request)
     {
         $user = new User();
@@ -175,6 +225,58 @@ class DefaultController extends Controller
             $em->persist($user);
             $em->flush();
         }
+    }
+
+    /**
+     * @Route("/reg")
+     *
+     *
+     */
+    public function regAction(Request $request)
+    {
+        $user = new User();
+        $data = json_decode($request->getContent(),true);
+        $form = $this->get('form.factory')->createNamed('',new UserType(),$user);
+        $form->submit($data);
+        if($form->isValid()){
+            $password = $this->get('security.password_encoder')
+                ->encodePassword($user, $user->getPassword());
+            $user->setPassword($password);
+
+            $gm = $this->getDoctrine()->getManager();
+            $gm->persist($user);
+            $gm->flush();
+
+            $response = new Response();
+            $response->setContent(json_encode(array(
+                'data' => 'succes',
+                //'id_loc' => $location->getIdLocation(),
+            )));
+            return $response;
+        }
+
+        /* $location = new Location();
+        $data = json_decode($request->getContent(),true);
+        $form = $this->get('form.factory')->createNamed('',new LocationType(),$location);
+        $form->submit($data);
+        if($form->isValid()){
+            $gm = $this->getDoctrine()->getManager();
+            $gm->persist($location);
+            $gm->flush();
+
+            $response = new Response();
+            $response->setContent(json_encode(array(
+                'data' => 'succes',
+                //'id_loc' => $location->getIdLocation(),
+            )));
+            return $response;
+        }*/
+
+        $response = new Response();
+        $response->setContent(json_encode(array(
+            'data' => 'fail',
+        )));
+        return $response;
     }
 
 

@@ -2,6 +2,10 @@
 
 namespace AppBundle\Controller;
 
+use AppBundle\Entity\Location;
+use AppBundle\Entity\Product;
+use AppBundle\Form\Type\ProductType;
+use AppBundle\Form\Type\LocationType;
 use FOS\RestBundle\Controller\FOSRestController;
 use Symfony\Bundle\FrameworkBundle\Controller\Controller;
 use Symfony\Component\HttpFoundation\Request;
@@ -25,11 +29,9 @@ class MedicinesStorageRESTController extends FOSRestController
 {
 
     /**
-     * @Rest\Get("/api/medicines/{town}/{name}")
+     * @Rest\Get("/api/medicines2/{town}/{name}")
      */
-    public function getMedicinesAction( $town , $name ){
-
-            //$accessor = PropertyAccess::createPropertyAccessor();
+    public function getMedicines2Action( $town , $name ){
             $gm = $this->getDoctrine()->getManager();
             $prod = $gm->getRepository('AppBundle:Product')
                 ->findBy(array('name' => $name));
@@ -38,48 +40,54 @@ class MedicinesStorageRESTController extends FOSRestController
                 array('town' => $town, 'idProduct' => $prod),
                 array('price' => 'ASC')
             );
-
-
-            //echo $data[0];
-
-        //$test = $accessor->getValue($data,'[0]');
-        //$test2=$test->getTown();
-        //$encoders = array(new XmlEncoder(), new JsonEncoder());
-        //$normalizers = array(new ObjectNormalizer());
-
-        //$serializer = new Serializer($normalizers, $encoders);
-
-        //$jsonContent = $serializer->serialize($data, 'json');
-        //echo $jsonContent;
-        //$response = new JsonResponse();
-        //$response->setData($jsonContent);
-
-        /*if ($data === null) {
-            return new View("Not found", Response::HTTP_NOT_FOUND);
-        }*/
         return $data;
+    }
 
-        /*$response = new Response($serializer->serialize($data, 'json'));
-        $response->headers->set('Content-Type', 'application/json; charset=UTF-8');
-        return $response;*/
+    /**
+     * @Rest\Get("/api/medicines/{town}/{name}")
+     */
+    public function getMedicinesAction($town,$name){
+        $em = $this->getDoctrine()->getEntityManager()
+            ->getConnection()
+            ->prepare('SELECT loc.town, loc.street, loc.price, pr.name,u.id_user, u.username FROM location loc
+                      LEFT JOIN product pr ON pr.id_product = loc.id_product
+                      LEFT JOIN user as u on u.id_user = loc.id_user
+                      WHERE loc.town =:town
+                      AND pr.name =:name');
+        $em->bindValue('town',$town);
+        $em->bindValue('name',$name);
+        $em->execute();
+        $data = $em->fetchAll();
+        //$data2 = json_encode($data);
 
+        //return new Response($data2);
+        return $data;
+    }
+
+    /**
+     * @Rest\Get("/api/search2/{qr}")
+     */
+    public function search2QrAction($qr){
+        $gm = $this->getDoctrine()->getManager();
+        $prod = $gm->getRepository('AppBundle:Product')->findBy(array('qrCode'=>$qr));
+        return $prod;
     }
 
     /**
      * @Rest\Get("/api/search/{qr}")
      */
-    public function searchQrAction($qr){
-        $gm = $this->getDoctrine()->getManager();
-        $prod = $gm->getRepository('AppBundle:Product')->findBy(array('qrCode'=>$qr));
+    public function searchAction($qr){
+        $em = $this->getDoctrine()->getEntityManager()
+            ->getConnection()
+            ->prepare('SELECT pr.name, pr.qr_code, pr.id_product FROM product pr
+                      WHERE pr.qr_code =:qr');
+        $em->bindValue('qr',$qr);
+        $em->execute();
+        $data = $em->fetchAll();
+        //$data2 = json_encode($data);
 
-        $encoders = array(new XmlEncoder(), new JsonEncoder());
-        $normalizers = array(new ObjectNormalizer());
-
-        $serializer = new Serializer($normalizers, $encoders);
-
-        $response = new Response($serializer->serialize($prod, 'json'));
-        $response->headers->set('Content-Type', 'application/json; charset=UTF-8');
-        return $response;
+        //return new Response($data2);
+        return $data;
     }
 
     /**
@@ -98,7 +106,7 @@ class MedicinesStorageRESTController extends FOSRestController
             $response = new Response();
             $response->setContent(json_encode(array(
                 'data' => 'succes',
-                'idProduct' => $product->getIdProduct(),
+                'id_product' => $product->getIdProduct(),
             )));
             return $response;
         }
@@ -136,53 +144,6 @@ class MedicinesStorageRESTController extends FOSRestController
             'data' => 'fail',
         )));
         return $response;
-    }
-
-    /**
-     * @Rest\Get("/api/medicines2/{town}/{name}")
-     */
-    public function getMedicines2Action( $town , $name ){
-
-        //$accessor = PropertyAccess::createPropertyAccessor();
-        $gm = $this->getDoctrine()->getManager();
-        $prod = $gm->getRepository('AppBundle:Product')
-            ->findBy(array('name' => $name));
-        $loc = $gm->getRepository('AppBundle:Location');
-        $data = $loc->findBy(
-            array('town' => $town, 'idProduct' => $prod),
-            array('price' => 'ASC')
-        );
-
-
-        //select u.username, l.town, l.street, l.price, p.name, p.qr_code
-        // from user as u, location as l, product as p
-        // where u.id_user = l.id_user and p.id_product = l.id_product and l.town = 'kraków' and p.name = 'apap'
-
-
-
-        //echo $data[0];
-
-        //$test = $accessor->getValue($data,'[0]');
-        //$test2=$test->getTown();
-        //$encoders = array(new XmlEncoder(), new JsonEncoder());
-        //$normalizers = array(new ObjectNormalizer());
-
-        //$serializer = new Serializer($normalizers, $encoders);
-
-        //$jsonContent = $serializer->serialize($data, 'json');
-        //echo $jsonContent;
-        //$response = new JsonResponse();
-        //$response->setData($jsonContent);
-
-        /*if ($data === null) {
-            return new View("Not found", Response::HTTP_NOT_FOUND);
-        }*/
-        return $data;
-
-        /*$response = new Response($serializer->serialize($data, 'json'));
-        $response->headers->set('Content-Type', 'application/json; charset=UTF-8');
-        return $response;*/
-
     }
 
 }

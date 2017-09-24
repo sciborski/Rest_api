@@ -19,7 +19,7 @@ class ProductType extends AbstractType
     {
         $builder
             ->add('name')
-            ->add('qrCode')
+            ->add('qr_code')
             ;
     }
     public function configureOptions(OptionsResolver $resolver)
